@@ -1,0 +1,25 @@
+.language-button {
+  background: none;
+  border: none;
+  color: var(--secundary-color);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 5px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.language-button:hover {
+  opacity: 0.7;
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
