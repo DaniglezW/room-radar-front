@@ -24,8 +24,8 @@ const LanguageSwitcher = () => {
   return mounted ? (
     <button className="language-button" onClick={toggleLanguage} title={t('language')}>
       {language === "es"
-        ? <Image src={Spain} alt="Spanish Flag" width={20} height={20} />
-        : <Image src={English} alt="UK Flag" width={20} height={20} />}
+        ? <Image src={Spain} alt="Spanish Flag" width={30} height={30} className="h-auto w-auto max-w-full max-h-full" />
+        : <Image src={English} alt="UK Flag" width={30} height={30} className="h-auto w-auto max-w-full max-h-full" />}
     </button>
   ) : null;
 };

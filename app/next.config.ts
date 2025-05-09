@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   images: {
     path: '/app/_next/image',
     loader: 'default',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'pixabay.com',
+      },
+    ],
   },
 };
 

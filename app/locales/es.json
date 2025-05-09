@@ -1,8 +1,15 @@
 {
-  "search": "¿Adónde vas?",
+  "placeSearch": "¿Adónde vas?",
+  "search": "Buscar",
+  "peopleCount": "Número de personas",
   "language": "Idioma",
   "destination": "Destino",
   "checkIn": "Fecha de entrada",
   "checkOut": "Fecha de salida",
-  "people": "Personas"
+  "people": "Personas",
+  "header": {
+    "registerProperty": "Registra tu alojamiento",
+    "register": "Hazte una cuenta",
+    "login": "Iniciar sesión"
+  }
 }

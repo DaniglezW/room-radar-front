@@ -4,14 +4,16 @@ import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
-export default function DateRangePicker() {
-  const [dateRange, setDateRange] = useState([
-    {
-      startDate: new Date(),
-      endDate: new Date(),
-      key: "selection",
-    },
-  ]);
+interface Props {
+  dateRange: {
+    startDate: Date;
+    endDate: Date;
+    key: string;
+  }[];
+  onChange: (range: { startDate: Date; endDate: Date }) => void;
+}
+
+export default function DateRangePicker({ dateRange, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +42,7 @@ export default function DateRangePicker() {
         <div className="absolute z-50 mt-2" ref={calendarRef}>
           <DateRange
             editableDateInputs={true}
-            onChange={(item) => setDateRange([item.selection])}
+            onChange={(item) => onChange(item.selection)}
             moveRangeOnFirstSelection={false}
             ranges={dateRange}
             minDate={new Date()}

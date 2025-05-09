@@ -1,8 +1,15 @@
 {
-  "search": "Where are you going?",
+  "placeSearch": "Where are you going?",
+  "search": "Search",
+  "peopleCount": "Number of people",
   "language": "Language",
   "destination": "Destination",
   "checkIn": "Check-in",
   "checkOut": "Check-out",
-  "people": "People"
+  "people": "People",
+  "header": {
+    "registerProperty": "List your property",
+    "register": "Register",
+    "login": "Login"
+  }
 }
