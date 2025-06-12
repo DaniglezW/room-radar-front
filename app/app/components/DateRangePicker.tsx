@@ -42,7 +42,12 @@ export default function DateRangePicker({ dateRange, onChange }: Props) {
         <div className="absolute z-50 mt-2" ref={calendarRef}>
           <DateRange
             editableDateInputs={true}
-            onChange={(item) => onChange(item.selection)}
+            onChange={(item) => {
+              const { startDate, endDate } = item.selection;
+              if (startDate && endDate) {
+                onChange({ startDate, endDate });
+              }
+            }}
             moveRangeOnFirstSelection={false}
             ranges={dateRange}
             minDate={new Date()}
