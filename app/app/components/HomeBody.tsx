@@ -2,27 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import HorizontalScroll from './HorizontalScroll';
-
-type Hotel = {
-  id: number;
-  name: string;
-  city: string;
-  country: string;
-  description?: string;
-  stars?: number;
-  images: {
-    id: number;
-    imageData: string | null;
-    description?: string;
-    isMain: boolean;
-  }[];
-};
+import { Hotel } from '../types/Hotel';
+import { Country } from '../types/Country';
 
 export default function HomeBody() {
   const [topHotels, setTopHotels] = useState<Hotel[]>([]);
   const [latestHotels, setLatestHotels] = useState<Hotel[]>([]);
   const [recommendedHotels, setRecommendedHotels] = useState<Hotel[]>([]);
-  const [popularCities, setPopularCities] = useState<string[]>([]);
+  const [popularCities, setPopularCities] = useState<Country[]>([]);
 
   const [loadingTop, setLoadingTop] = useState(true);
   const [loadingLatest, setLoadingLatest] = useState(true);
@@ -47,56 +34,56 @@ export default function HomeBody() {
       .then(data => setRecommendedHotels(data.hotels ?? []))
       .finally(() => setLoadingRecommended(false));
 
-      const fetchPopularCitiesWithImages = async () => {
-        try {
-          const res = await fetch(`${baseUrl}/hotel/v1/popular-destinations`);
-          const countries: string[] = await res.json();
-  
-          // Enviar los nombres de los países al endpoint que devuelve el número de alojamientos por país
-          const accommodationCounts = await fetch(`${baseUrl}/hotel/v1/accommodations-by-country`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(countries),
-          });
-          const accommodationData = await accommodationCounts.json();
-  
-          const imageFetches = countries.map(async (name) => {
-            try {
-              const response = await fetch(
-                `https://pixabay.com/api/?key=50172934-916d0c37f58b76dd39eff8b78&q=${encodeURIComponent(name)}&image_type=photo&category=places&safesearch=true`
-              );
-              const data = await response.json();
-              const image = data.hits?.[0]?.webformatURL ?? '/defaultCountry.jpg';
-  
-              // Buscar el número de alojamientos para cada país
-              const accommodationCount = accommodationData.find((item: any) => item.country === name)?.accommodations ?? 0;
-  
-              return {
-                name,
-                image,
-                accommodations: accommodationCount,
-              };
-            } catch (error) {
-              console.error('Error fetching image for', name, error);
-              return {
-                name,
-                image: '/defaultCountry.jpg',
-                accommodations: 0,
-              };
-            }
-          });
-  
-          const countriesWithImages = await Promise.all(imageFetches);
-          setPopularCities(countriesWithImages);
-        } catch (error) {
-          console.error('Error fetching popular cities:', error);
-        } finally {
-          setLoadingCities(false);
-        }
-      };
-      fetchPopularCitiesWithImages();
+    const fetchPopularCitiesWithImages = async () => {
+      try {
+        const res = await fetch(`${baseUrl}/hotel/v1/popular-destinations`);
+        const countries: string[] = await res.json();
+
+        // Enviar los nombres de los países al endpoint que devuelve el número de alojamientos por país
+        const accommodationCounts = await fetch(`${baseUrl}/hotel/v1/accommodations-by-country`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(countries),
+        });
+        const accommodationData = await accommodationCounts.json();
+
+        const imageFetches = countries.map(async (name) => {
+          try {
+            const response = await fetch(
+              `https://pixabay.com/api/?key=50172934-916d0c37f58b76dd39eff8b78&q=${encodeURIComponent(name)}&image_type=photo&category=places&safesearch=true`
+            );
+            const data = await response.json();
+            const image = data.hits?.[0]?.webformatURL ?? '/defaultCountry.jpg';
+
+            // Buscar el número de alojamientos para cada país
+            const accommodationCount = accommodationData.find((item: any) => item.country === name)?.accommodations ?? 0;
+
+            return {
+              name,
+              image,
+              accommodations: accommodationCount,
+            };
+          } catch (error) {
+            console.error('Error fetching image for', name, error);
+            return {
+              name,
+              image: '/defaultCountry.jpg',
+              accommodations: 0,
+            };
+          }
+        });
+
+        const countriesWithImages = await Promise.all(imageFetches);
+        setPopularCities(countriesWithImages);
+      } catch (error) {
+        console.error('Error fetching popular cities:', error);
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    fetchPopularCitiesWithImages();
   }, []);
 
   return (

@@ -7,12 +7,7 @@ import Image from 'next/image';
 import DefaultHotelImage from '../../public/defaultHotel.png';
 import DefaultCountryImage from '../../public/defaultCountry.png';
 import { useMediaQuery } from 'react-responsive';
-
-interface Country {
-  name: string;
-  image: string;
-  accommodations: number;
-}
+import { Country } from '../types/Country';
 
 type ScrollItem = Hotel | Country;
 
