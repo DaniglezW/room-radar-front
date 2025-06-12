@@ -6,6 +6,14 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import ClientToaster from "./components/ClientToaster";
 
+export const metadata = {
+  title: 'Room Radar',
+  description: 'Web de reservas de hoteles',
+  icons: {
+    icon: '/favicon.ico',
+  },
+};
+
 type RootLayoutProps = {
   readonly children: React.ReactNode;
 };
