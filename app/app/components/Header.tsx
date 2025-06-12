@@ -57,7 +57,7 @@ export default function Header() {
     <header className="bg-blue-900 text-white px-6 py-4 shadow-md w-full">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo + Nombre */}
-        <Link href="/app" className="flex items-center space-x-2 hover:opacity-80 transition">
+        <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition">
           <Image src={WhiteIcon} alt="RoomRadar Logo" width={40} height={40} />
           <h1 className="text-xl font-bold">RoomRadar</h1>
         </Link>
@@ -70,19 +70,19 @@ export default function Header() {
             <>
               <CurrencySwitcher />
 
-              <Link href="/app/register-property">
+              <Link href="/register-property">
                 <button className="text-white hover:bg-white/10 px-4 py-2 rounded-lg transition min-w-[180px] text-center">
                   {t("header.registerProperty")}
                 </button>
               </Link>
 
-              <Link href="/app/register">
+              <Link href="/register">
                 <button className="bg-white text-blue-900 font-semibold hover:bg-blue-100 px-4 py-2 rounded-lg transition min-w-[140px] text-center">
                   {t("header.register")}
                 </button>
               </Link>
 
-              <Link href="/app/login">
+              <Link href="/login">
                 <button className="bg-white text-blue-900 font-semibold hover:bg-blue-100 px-4 py-2 rounded-lg transition min-w-[140px] text-center">
                   {t("header.login")}
                 </button>

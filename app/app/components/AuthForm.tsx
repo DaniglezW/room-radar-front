@@ -127,14 +127,14 @@ export default function AuthForm({ type }: Readonly<AuthFormProps>) {
         {type === 'login' ? (
           <>
             ¿No tienes cuenta?{' '}
-            <Link href="/app/register" className="text-blue-500 hover:underline">
+            <Link href="/register" className="text-blue-500 hover:underline">
               Regístrate aquí
             </Link>
           </>
         ) : (
           <>
             ¿Ya tienes una cuenta?{' '}
-            <Link href="/app/login" className="text-blue-500 hover:underline">
+            <Link href="/login" className="text-blue-500 hover:underline">
               Inicia sesión aquí
             </Link>
           </>
