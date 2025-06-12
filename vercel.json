@@ -15,19 +15,12 @@
     ],
     "routes": [
         {
-            "src": "/app/(.*)",
-            "dest": "/app/$1"
+            "src": "^/app(?:/.*)?$",
+            "dest": "/app$1"
         },
         {
             "src": "/(.*)",
             "dest": "/landing/$1"
-        },
-        {
-            "src": "/app",
-            "status": 308,
-            "headers": {
-                "Location": "/app/"
-            }
         }
     ]
 }
