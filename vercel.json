@@ -15,8 +15,23 @@
     ],
     "routes": [
         {
-            "src": "^/app(?:/.*)?$",
-            "dest": "/app$1"
+            "src": "^/app/_next/static/(.*)$",
+            "dest": "/app/_next/static/$1"
+        },
+        {
+            "src": "^/app/_next/image(.*)$",
+            "dest": "/app/_next/image$1"
+        },
+        {
+            "src": "^/app/(.*)$",
+            "dest": "/app/$1"
+        },
+        {
+            "src": "^/app$",
+            "status": 308,
+            "headers": {
+                "Location": "/app/"
+            }
         },
         {
             "src": "/(.*)",
