@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as OutlineStarIcon } from '@heroicons/react/24/outline';
 

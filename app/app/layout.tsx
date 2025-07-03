@@ -10,7 +10,9 @@ export const metadata = {
   title: 'Room Radar',
   description: 'Web de reservas de hoteles',
   icons: {
-    icon: '/favicon.ico',
+    icon: './app/app/public/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
 };
 
