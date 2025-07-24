@@ -10,9 +10,7 @@ export const metadata = {
   title: 'Room Radar',
   description: 'Web de reservas de hoteles',
   icons: {
-    icon: './app/app/public/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/favicon.ico',
   },
 };
 
@@ -26,11 +24,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className={`${montserrat.className} antialiased`}>
         <ClientToaster />
         <CurrencyProvider>
-        <LanguageProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </LanguageProvider>
+          <LanguageProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </LanguageProvider>
         </CurrencyProvider>
       </body>
     </html>
