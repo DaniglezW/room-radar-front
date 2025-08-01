@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { loginUser, registerUser } from '../lib/api';
 import { LoginRequest, RegisterRequest } from '../types/Auth';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
+import { socialLogin } from '../services/authService';
 
 interface AuthFormProps {
   type: 'login' | 'register';
@@ -119,6 +121,42 @@ export default function AuthForm({ type }: Readonly<AuthFormProps>) {
             type === 'login' ? 'Iniciar sesión' : 'Registrarse'
           )}
         </button>
+
+        {type === 'login' && (
+          <div className="flex justify-center mt-4">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                const token = credentialResponse.credential;
+                if (!token) {
+                  toast.error('Token no válido');
+                  return;
+                }
+
+                try {
+                  const response = await socialLogin(token, 'google');
+
+                  if (response.code !== 0) {
+                    toast.error(response.message || 'Error al iniciar sesión con Google');
+                    return;
+                  }
+
+                  toast.success(response.message || 'Sesión iniciada con Google');
+                  window.location.href = '/app';
+                } catch (err: any) {
+                  toast.error(err.message || 'Error en el login con Google');
+                }
+              }}
+              onError={() => {
+                toast.error('Error al iniciar sesión con Google');
+              }}
+              theme="filled_blue" // Estilos: 'outline' | 'filled_blue' | 'filled_black'
+              size="large"        // Tamaños: 'small' | 'medium' | 'large'
+              text="continue_with"  // Textos: 'signin_with' | 'signup_with' | 'continue_with' | 'signin'
+              shape="pill"        // Formas: 'rectangular' | 'pill' | 'circle' | 'square'
+              width="280" 
+            />
+          </div>
+        )}
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
       </form>

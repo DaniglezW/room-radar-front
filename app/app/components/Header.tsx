@@ -16,6 +16,7 @@ interface UserDTO {
   phoneNumber: string;
   role: string;
   profilePicture: string;
+  googleProfilePictureUrl: string;
   createdAt: string;
 }
 
@@ -42,7 +43,7 @@ export default function Header() {
       credentials: "include",
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error("Unauthorized");
+        if (!res.ok) return;
         const data = await res.json();
         setUser(data.user);
       })
@@ -50,6 +51,38 @@ export default function Header() {
         setUser(null);
       });
   }, []);
+
+  const renderUserAvatar = (user: UserDTO) => {
+    if (user.profilePicture) {
+      return (
+        <Image
+          src={`data:image/jpeg;base64,${user.profilePicture}`}
+          alt="User"
+          width={40}
+          height={40}
+          className="rounded-full object-cover"
+        />
+      );
+    }
+
+    if (user.googleProfilePictureUrl) {
+      return (
+        <Image
+          src={user.googleProfilePictureUrl}
+          alt="User"
+          width={40}
+          height={40}
+          className="inline-block rounded-full object-cover"
+        />
+      );
+    }
+
+    return (
+      <div className="w-10 h-10 bg-white text-blue-900 font-bold rounded-full flex items-center justify-center">
+        {user.fullName?.[0] ?? "U"}
+      </div>
+    );
+  };
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
@@ -97,21 +130,16 @@ export default function Header() {
               <span className="text-sm">{user.fullName}</span>
 
               <div className="relative" ref={dropdownRef}>
-                <div onClick={() => setDropdownOpen(!dropdownOpen)} className="cursor-pointer">
-                  {user.profilePicture ? (
-                    <Image
-                      src={`data:image/jpeg;base64,${user.profilePicture}`}
-                      alt="User"
-                      width={40}
-                      height={40}
-                      className="rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-white text-blue-900 font-bold rounded-full flex items-center justify-center">
-                      {user.fullName?.[0] ?? "U"}
-                    </div>
-                  )}
-                </div>
+                {user && (
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="w-10 h-10 rounded-full overflow-hidden border-none bg-transparent p-0 cursor-pointer"
+                    aria-label="Open profile dropdown"
+                  >
+                    {renderUserAvatar(user)}
+                  </button>
+                )}
+
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-white text-blue-900 rounded-lg shadow-lg z-50">

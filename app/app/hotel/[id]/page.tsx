@@ -11,7 +11,8 @@ import { DateRange } from 'react-date-range';
 import DateRangePicker from '@/app/components/DateRangePicker';
 import QuantityInput from '@/app/components/QuantityInput';
 import { Users } from 'lucide-react';
-import { formatISO } from 'date-fns';
+import { format, formatISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 type Room = {
     id: number;
@@ -33,6 +34,7 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [numPeople, setNumPeople] = useState(1);
+    const [hasSearched, setHasSearched] = useState<boolean>(false);
 
     const [dateRange, setDateRange] = useState([
         {
@@ -43,6 +45,8 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
     ]);
 
     const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL;
+
+    const formattedRange = `${format(dateRange[0].startDate, 'd MMM yyyy', { locale: es })} – ${format(dateRange[0].endDate, 'd MMM yyyy', { locale: es })}`;
 
     useEffect(() => {
         if (!id || isNaN(Number(id))) {
@@ -99,6 +103,7 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
 
             const res = await fetch(url);
             if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+            setHasSearched(true);
             const data = await res.json();
             setRooms(data.room ?? data); // Ajusta según estructura JSON
         } catch (err: any) {
@@ -183,7 +188,9 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
 
             {/* Sección habitaciones estilo tabla */}
             <div className="mt-10">
-                <h2 className="text-2xl font-semibold mb-4">Habitaciones</h2>
+                <h2 className="text-2xl font-semibold mb-4">
+                    {hasSearched ? `Habitaciones disponibles · ${formattedRange}` : 'Nuestras habitaciones'}
+                </h2>
                 {rooms.length === 0 ? (
                     <p>No hay habitaciones disponibles.</p>
                 ) : (

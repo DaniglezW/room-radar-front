@@ -5,6 +5,7 @@ import { montserrat } from "./ui/fonts";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import ClientToaster from "./components/ClientToaster";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export const metadata = {
   title: 'Room Radar',
@@ -22,14 +23,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className={`${montserrat.className} antialiased`}>
-        <ClientToaster />
-        <CurrencyProvider>
-          <LanguageProvider>
-            <Header />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
-          </LanguageProvider>
-        </CurrencyProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          <ClientToaster />
+          <CurrencyProvider>
+            <LanguageProvider>
+              <Header />
+              <main className="min-h-screen">{children}</main>
+              <Footer />
+            </LanguageProvider>
+          </CurrencyProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
