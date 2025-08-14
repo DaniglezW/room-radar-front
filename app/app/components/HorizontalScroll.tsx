@@ -8,6 +8,8 @@ import DefaultHotelImage from '../../public/defaultHotel.png';
 import DefaultCountryImage from '../../public/defaultCountry.png';
 import { useMediaQuery } from 'react-responsive';
 import { Country } from '../types/Country';
+import { fetchUserFavorites } from '../services/favoriteService';
+import HeartToggle from './HeartToggle';
 
 type ScrollItem = Hotel | Country;
 
@@ -29,6 +31,31 @@ export default function HorizontalScroll<T extends ScrollItem>({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const isMobile = useMediaQuery({ maxWidth: 640 });
+
+  const [favoriteHotelIds, setFavoriteHotelIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      const match = RegExp(new RegExp('(^| )' + name + '=([^;]+)')).exec(document.cookie);
+      return match ? match[2] : null;
+    };
+
+    const token = getCookie("token");
+
+    if (!token) {
+      setFavoriteHotelIds([]);
+      return;
+    }
+
+    if (type === "hotel") {
+      fetchUserFavorites()
+        .then(data => {
+          const ids = Array.isArray(data) ? data : Array.isArray(data.favorites) ? data.favorites : [];
+          setFavoriteHotelIds(ids);
+        })
+        .catch(() => setFavoriteHotelIds([]));
+    }
+  }, [type]);
 
   useEffect(() => {
     if (!loading && scrollRef.current) {
@@ -88,6 +115,7 @@ export default function HorizontalScroll<T extends ScrollItem>({
 
   const renderHotelCard = (hotel: Hotel) => {
     const mainImage = hotel.images.find(img => img.isMain);
+    const isFavorite = favoriteHotelIds.includes(hotel.id);
 
     return (
       <div
@@ -95,6 +123,7 @@ export default function HorizontalScroll<T extends ScrollItem>({
         className="p-4 border rounded-lg shadow hover:shadow-lg transition cursor-pointer w-56 sm:w-60 md:w-64 h-[22rem] flex flex-col justify-between"
         onClick={() => router.push(`/hotel/${hotel.id}`)}
       >
+
         <div className="h-40 bg-gray-200 mb-4 rounded-md relative overflow-hidden">
           <Image
             src={mainImage?.imageData ? `data:image/jpeg;base64,${mainImage?.imageData}` : DefaultHotelImage}
@@ -104,6 +133,14 @@ export default function HorizontalScroll<T extends ScrollItem>({
             className="object-contain object-center bg-white rounded-md"
             priority
           />
+
+          <div
+            className="absolute top-2 right-2 z-20 rounded-full bg-white bg-opacity-70"
+            onClick={e => e.stopPropagation()}
+          >
+            <HeartToggle isFavoriteProp={isFavorite} itemId={hotel.id} />
+          </div>
+
         </div>
         <div>
           <h3 className="text-lg font-semibold truncate">{hotel.name}</h3>

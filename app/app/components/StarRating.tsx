@@ -5,7 +5,7 @@ type StarRatingProps = {
     rating: number; // 1 a 5
 };
 
-export default function StarRating({ rating }: StarRatingProps) {
+export default function StarRating({ rating }: Readonly<StarRatingProps>) {
     return (
         <div className="flex space-x-1">
             {[1, 2, 3, 4, 5].map((num) =>

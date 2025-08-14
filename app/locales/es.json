@@ -11,5 +11,13 @@
     "registerProperty": "Registra tu alojamiento",
     "register": "Hazte una cuenta",
     "login": "Iniciar sesión"
+  },
+  "homeBody": {
+    "searchResults": "Resultados de tu búsqueda",
+    "noHotels": "No hay hoteles disponibles para estos requerimientos.",
+    "topHotels": "Hoteles mejor valorados",
+    "latestHotels": "Nuevos descubrimientos",
+    "recommendedHotels": "Recomendado para ti",
+    "popularDestinations": "Destinos más populares"
   }
 }

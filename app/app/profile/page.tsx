@@ -84,7 +84,14 @@ export default function Profile() {
                 <p className="text-gray-500 text-sm">
                     Usuario desde el {format(new Date(user.createdAt), "d 'de' MMMM yyyy", { locale: es })}
                 </p>
+                <button
+                    onClick={() => router.push('/profile/favorites')}
+                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                >
+                    ❤️ Ver favoritos
+                </button>
             </div>
+
 
             <form className="grid gap-6 bg-white p-6 rounded-xl shadow-md">
                 <div>

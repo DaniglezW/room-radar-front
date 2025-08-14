@@ -11,5 +11,13 @@
     "registerProperty": "List your property",
     "register": "Register",
     "login": "Login"
+  },
+  "homeBody": {
+    "searchResults": "Search results",
+    "noHotels": "No hotels available for these requirements.",
+    "topHotels": "Top rated hotels",
+    "latestHotels": "Latest discoveries",
+    "recommendedHotels": "Recommended for you",
+    "popularDestinations": "Most popular destinations"
   }
 }

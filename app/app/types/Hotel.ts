@@ -1,3 +1,5 @@
+import { Room } from "./Room";
+
 export type Hotel = {
   id: number;
   name: string;
@@ -12,4 +14,5 @@ export type Hotel = {
     description?: string;
     isMain: boolean;
   }[];
+  availableRooms: Room[]
 };

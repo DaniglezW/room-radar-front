@@ -4,8 +4,17 @@ import { useEffect, useState } from 'react';
 import HorizontalScroll from './HorizontalScroll';
 import { Hotel } from '../types/Hotel';
 import { Country } from '../types/Country';
+import SearchResultsList from './SearchResultList';
+import { useTranslation } from 'react-i18next';
 
-export default function HomeBody() {
+interface HomeBodyProps {
+  searchedHotels: Hotel[] | null;
+  checkInDate: string | null;
+  checkOutDate: string | null;
+  maxGuests: number | null;
+}
+
+export default function HomeBody({ searchedHotels, checkInDate, checkOutDate, maxGuests }: Readonly<HomeBodyProps>) {
   const [topHotels, setTopHotels] = useState<Hotel[]>([]);
   const [latestHotels, setLatestHotels] = useState<Hotel[]>([]);
   const [recommendedHotels, setRecommendedHotels] = useState<Hotel[]>([]);
@@ -16,6 +25,7 @@ export default function HomeBody() {
   const [loadingRecommended, setLoadingRecommended] = useState(true);
   const [loadingCities, setLoadingCities] = useState(true);
 
+  const { t } = useTranslation();
   const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL;
 
   useEffect(() => {
@@ -86,25 +96,45 @@ export default function HomeBody() {
     fetchPopularCitiesWithImages();
   }, []);
 
+  if (searchedHotels !== null) {
+    return (
+      <section className="p-6 max-w-6xl mx-auto space-y-10">
+        {searchedHotels.length > 0 ? (
+          <>
+            <h2 className="text-2xl font-bold mb-4">{t("homeBody.searchResults")}</h2>
+            <SearchResultsList
+              hotels={searchedHotels}
+              checkInDate={checkInDate}
+              checkOutDate={checkOutDate}
+              maxGuests={maxGuests}
+            />
+          </>
+        ) : (
+          <p className="text-center text-xl font-semibold text-gray-500">{t("homeBody.noHotels")}</p>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section className="p-6 max-w-6xl mx-auto space-y-10">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Hoteles mejor valorados</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("homeBody.topHotels")}</h2>
         <HorizontalScroll loading={loadingTop} items={topHotels} type='hotel' />
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold mb-4">Nuevos descubrimientos</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("homeBody.latestHotels")}</h2>
         <HorizontalScroll loading={loadingLatest} items={latestHotels} type='hotel' />
       </div>
 
       {/* <div>
-        <h2 className="text-2xl font-bold mb-4">Recomendado para ti</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("homeBody.recommendedHotels")}</h2>
         <HorizontalScroll loading={loadingRecommended} items={recommendedHotels} type='hotel' />
       </div> */}
 
       <div>
-        <h2 className="text-2xl font-bold mb-4">Destinos más populares</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("homeBody.popularDestinations")}</h2>
         <HorizontalScroll loading={loadingCities} items={popularCities} type='country' />
       </div>
     </section>

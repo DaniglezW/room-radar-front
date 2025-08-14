@@ -13,6 +13,7 @@ interface CurrencyContextType {
   rate: number;
   changeCurrency: (newCurrency: string) => void;
   supportedCurrencies: string[];
+  formatPrice: (valueInEUR: number) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -21,9 +22,21 @@ const SUPPORTED_CURRENCIES = [
   'EUR', 'USD', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'BRL', 'MXN'
 ];
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  EUR: '€',
+  USD: '$',
+  GBP: '£',
+  JPY: '¥',
+  AUD: 'A$',
+  CAD: 'C$',
+  CHF: 'CHF',
+  BRL: 'R$',
+  MXN: 'MX$',
+};
+
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currency, setCurrency] = useState('EUR');
-  const [rate, setRate] = useState(1); // 1 EUR = 1 EUR
+  const [rate, setRate] = useState(1);
   const [rates, setRates] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -36,7 +49,6 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error fetching exchange rates:', err);
       }
     };
-
     fetchRates();
   }, []);
 
@@ -49,6 +61,12 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const formatPrice = (valueInEUR: number) => {
+    const converted = valueInEUR * rate;
+    const symbol = CURRENCY_SYMBOLS[currency] || '';
+    return `${symbol}${converted.toFixed(2)}`;
+  };
+
   return (
     <CurrencyContext.Provider
       value={{
@@ -56,6 +74,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
         rate,
         changeCurrency,
         supportedCurrencies: SUPPORTED_CURRENCIES,
+        formatPrice,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import HotelGallery from '@/app/components/HotelGallery';
 import StarRating from '@/app/components/StarRating';
 import { Hotel } from '@/app/types/Hotel';
@@ -13,6 +13,9 @@ import QuantityInput from '@/app/components/QuantityInput';
 import { Users } from 'lucide-react';
 import { format, formatISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useSearchParams } from 'next/navigation';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
+import { useCurrency } from '@/context/CurrencyContext';
 
 type Room = {
     id: number;
@@ -27,6 +30,8 @@ type Room = {
 export default function HotelPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
+    const tableRef = useRef<HTMLDivElement | null>(null);
+    const { formatPrice } = useCurrency();
 
     const [hotel, setHotel] = useState<Hotel | null>(null);
     const [services, setServices] = useState<Service[]>([]);
@@ -44,8 +49,8 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
         },
     ]);
 
+    const searchParams = useSearchParams();
     const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL;
-
     const formattedRange = `${format(dateRange[0].startDate, 'd MMM yyyy', { locale: es })} – ${format(dateRange[0].endDate, 'd MMM yyyy', { locale: es })}`;
 
     useEffect(() => {
@@ -86,6 +91,32 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
         fetchData();
     }, [id]);
 
+    useEffect(() => {
+        const checkInDate = searchParams.get('checkInDate');
+        const checkOutDate = searchParams.get('checkOutDate');
+        const maxGuests = searchParams.get('maxGuests');
+
+        if (checkInDate && checkOutDate) {
+            setDateRange([
+                {
+                    startDate: new Date(checkInDate),
+                    endDate: new Date(checkOutDate),
+                    key: 'selection',
+                },
+            ]);
+
+            if (maxGuests) {
+                setNumPeople(Number(maxGuests));
+            }
+
+            fetchRoomsByAvailability().then(() => {
+                setTimeout(() => {
+                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            });
+        }
+    }, [searchParams]);
+
     const fetchRoomsByAvailability = async () => {
         setLoading(true);
         setError(null);
@@ -105,7 +136,7 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
             if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
             setHasSearched(true);
             const data = await res.json();
-            setRooms(data.room ?? data); // Ajusta según estructura JSON
+            setRooms(data.room ?? data);
         } catch (err: any) {
             setError(err.message ?? 'Error desconocido al cargar disponibilidad');
         } finally {
@@ -113,33 +144,33 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
         }
     };
 
-    if (loading) return <p>Cargando hotel...</p>;
+    if (loading) return <LoadingSpinner />;
     if (error) return <p className="text-red-500">Error: {error}</p>;
     if (!hotel) return <p>No se encontró el hotel.</p>;
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold">{hotel.name}</h1>
+        <div className="max-w-6xl mx-auto p-6 space-y-12 scroll-smooth">
+            {/* Cabecera */}
+            <div className="space-y-2">
+                <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">{hotel.name}</h1>
                 <StarRating rating={hotel.stars ?? 0} />
-                <p className="text-gray-600 mt-1">
-                    {hotel.address}, {hotel.city}, {hotel.country}
-                </p>
+                <p className="text-gray-500">{hotel.address}, {hotel.city}, {hotel.country}</p>
             </div>
 
-            <div className="mb-10">
+            {/* Galería */}
+            <div>
                 <HotelGallery images={hotel.images ?? []} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Descripción y mapa */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t pt-8">
                 <div>
-                    <h2 className="text-2xl font-semibold mb-2">Descripción</h2>
-                    <p className="text-gray-800 mb-4">{hotel.description}</p>
-
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">Sobre este hotel</h2>
+                    <p className="text-gray-700 mb-6 leading-relaxed">{hotel.description}</p>
                     <HotelAmenities services={services} />
                 </div>
 
-                <div className="h-72 rounded-lg overflow-hidden shadow">
+                <div className="h-72 rounded-lg overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
                     <iframe
                         title="Mapa del hotel"
                         width="100%"
@@ -148,15 +179,13 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
-                        src={`https://www.google.com/maps?q=${encodeURIComponent(
-                            `${hotel.address}, ${hotel.city}, ${hotel.country}`
-                        )}&output=embed`}
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(`${hotel.address}, ${hotel.city}, ${hotel.country}`)}&output=embed`}
                     />
                 </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex flex-wrap gap-6 items-end mt-10">
+            {/* Buscador */}
+            <div className="flex flex-wrap gap-6 items-end border-t pt-8">
                 <div className="w-full max-w-md">
                     <DateRangePicker
                         dateRange={dateRange}
@@ -175,66 +204,57 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
                     />
                 </div>
 
-                {/* Botón para ver disponibilidad */}
                 <div className="w-full md:w-auto">
                     <button
                         onClick={fetchRoomsByAvailability}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded w-full md:w-auto"
+                        className="bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white font-semibold px-5 py-2 rounded-lg shadow"
                     >
-                        Ver Disponibilidad
+                        Ver disponibilidad
                     </button>
                 </div>
             </div>
 
-            {/* Sección habitaciones estilo tabla */}
-            <div className="mt-10">
+            {/* Tabla de habitaciones */}
+            <div className="pt-8" ref={tableRef}>
                 <h2 className="text-2xl font-semibold mb-4">
                     {hasSearched ? `Habitaciones disponibles · ${formattedRange}` : 'Nuestras habitaciones'}
                 </h2>
                 {rooms.length === 0 ? (
-                    <p>No hay habitaciones disponibles.</p>
+                    <p className="text-gray-500">No hay habitaciones disponibles.</p>
                 ) : (
-                    <div className="max-h-96 overflow-y-auto border rounded-lg shadow">
+                    <div className="max-h-96 overflow-y-auto border rounded-lg shadow-lg">
                         <table className="w-full table-auto border-collapse">
-                            <thead className="bg-gray-100 sticky top-0">
+                            <thead className="bg-gray-50 sticky top-0">
                                 <tr>
-                                    <th className="text-left px-4 py-2 border-b">Detalles</th>
-                                    <th className="text-center px-4 py-2 border-b">Máximo de huéspedes</th>
-                                    <th className="text-center px-4 py-2 border-b">Disponibilidad</th>
+                                    <th className="text-left px-4 py-3 border-b">Detalles</th>
+                                    <th className="text-center px-4 py-3 border-b">Máx. huéspedes</th>
+                                    <th className="text-center px-4 py-3 border-b">Disponibilidad</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {rooms.map(room => {
                                     const isAvailable = room.available === true;
                                     return (
-                                        <tr key={room.id} className="hover:bg-gray-50">
+                                        <tr key={room.id} className="hover:bg-gray-50 transition-colors duration-200">
                                             <td className="px-4 py-3 border-b align-top">
-                                                <p className="font-semibold text-gray-800">{room.type}</p>
-                                                <p className="text-gray-600">Precio por noche: <span className="font-medium">€{room.pricePerNight.toFixed(2)}</span></p>
+                                                <p className="font-semibold text-gray-900">{room.type}</p>
+                                                <p className="text-gray-600">Precio por noche: <span className="font-medium">{formatPrice(room.pricePerNight)}</span></p>
                                                 <p className="text-gray-600">Nº habitación: {room.roomNumber}</p>
                                             </td>
                                             <td className="text-center px-4 border-b align-middle">
-                                                <div className="inline-flex items-center justify-center gap-1 h-full">
+                                                <div className="inline-flex items-center justify-center gap-1">
                                                     {Array.from({ length: room.maxGuests }).map((_, i) => (
                                                         <Users key={i} className="w-5 h-5 text-blue-600" />
                                                     ))}
-                                                    <span className="ml-2 text-sm text-gray-600">nu máx.</span>
                                                 </div>
                                             </td>
                                             <td className="text-center px-4 border-b align-middle">
                                                 {isAvailable ? (
-                                                    <button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded">
+                                                    <button className="bg-green-600 hover:bg-green-700 transition-all duration-300 text-white font-semibold px-4 py-1 rounded">
                                                         Reservar
                                                     </button>
                                                 ) : (
-                                                    <div>
-                                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-3 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                                                            No disponible para las fechas seleccionadas
-                                                        </div>
-                                                        <span className="text-red-500 font-semibold flex items-center justify-center gap-1">
-                                                            ❌ No disponible
-                                                        </span>
-                                                    </div>
+                                                    <span className="text-red-500 font-semibold">❌ No disponible</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -246,7 +266,11 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
                 )}
             </div>
 
-            <HotelReviews hotelId={id} />
+            {/* Reseñas */}
+            <div className="border-t pt-8">
+                <h2 className="text-2xl font-semibold mb-6">Opiniones de huéspedes</h2>
+                <HotelReviews hotelId={id} />
+            </div>
         </div>
     );
 }
