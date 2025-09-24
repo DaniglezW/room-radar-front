@@ -1,25 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import StarRating from './StarRating';
 import Image from 'next/image';
 
-type Review = {
-    review: {
-        id: number;
-        rating: number;
-        comment: string;
-        createdAt: string;
-    };
-    user: {
-        id: number;
-        fullName: string;
-        profilePicture: string | null;
-    };
+type ShowReview = {
+    id: number;
+    overallRating: number;
+    comment: string;
+    createdAt: string;
+    username: string;
+    profileImg: string | null; // convertimos el byte[] a Base64 en el backend si es necesario
 };
 
 export default function HotelReviews({ hotelId }: Readonly<{ hotelId: string }>) {
-    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviews, setReviews] = useState<ShowReview[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +26,12 @@ export default function HotelReviews({ hotelId }: Readonly<{ hotelId: string }>)
                 if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
 
                 const data = await res.json();
-                setReviews(data.reviews ?? []);
+                // Asegurarnos de que profileImg sea null si no viene
+                const formattedReviews = (data.reviews ?? []).map((r: any) => ({
+                    ...r,
+                    profileImg: r.profileImg ?? null,
+                }));
+                setReviews(formattedReviews);
             } catch (err: any) {
                 setError(err.message ?? 'Error al cargar reviews');
             } finally {
@@ -43,45 +42,55 @@ export default function HotelReviews({ hotelId }: Readonly<{ hotelId: string }>)
         fetchReviews();
     }, [hotelId]);
 
+    const renderUserAvatar = (review: ShowReview) => {
+        if (review.profileImg) {
+            return (
+                <Image
+                    src={`data:image/jpeg;base64,${review.profileImg}`}
+                    alt={review.username}
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover w-10 h-10"
+                />
+            );
+        }
+
+        return (
+            <div className="w-10 h-10 bg-blue-100 text-blue-900 font-bold rounded-full flex items-center justify-center">
+                {review.username?.[0]?.toUpperCase() ?? 'U'}
+            </div>
+        );
+    };
+
     if (loading) return <p>Cargando reseñas...</p>;
     if (error) return <p className="text-red-500">Error: {error}</p>;
-    if (reviews.length === 0) return <p>No hay reseñas aún.</p>;
+    if (reviews.length === 0) return <p>Sin reseñas.</p>;
 
     return (
         <div className="mt-10">
-            <div className='flex space-x-6'>
-                <h2 className="text-2xl font-semibold mb-4">Reseñas ({reviews.length})</h2>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                </svg>
-            </div>
-
-            <div className="space-y-6">
-                {reviews.map(({ review, user }) => (
-                    <div key={review.id} className="bg-white p-4 rounded shadow">
-                        <div className="flex items-center mb-2">
-                            {user.profilePicture ? (
-                                <Image
-                                    src={`data:image/jpeg;base64,${user.profilePicture}`}
-                                    alt="User"
-                                    width={40}
-                                    height={40}
-                                    className="rounded-full object-cover mr-3"
-                                />
-                            ) : (
-                                <div
-                                    className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                                    style={{ backgroundColor: '#f8b9fe', border: '1px solid #ccc', color: '#6b21a8', fontWeight: 'bold', fontSize: '1rem', userSelect: 'none', }}>
-                                    {user.fullName?.[0]?.toUpperCase() ?? 'U'}
-                                </div>
-                            )}
-                            <div>
-                                <p className="font-semibold">{user.fullName}</p>
-                                <StarRating rating={review.rating} />
+            <h2 className="text-2xl font-semibold mb-6">Reseñas ({reviews.length})</h2>
+            <div className="space-y-4">
+                {reviews.map((review) => (
+                    <div
+                        key={review.id}
+                        className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3">
+                                {renderUserAvatar(review)}
+                                <span className="font-semibold text-gray-800">{review.username}</span>
                             </div>
+                            <span
+                                className="font-bold px-3 py-1 rounded-full text-white"
+                                style={{ backgroundColor: '#2F6FEB' }}
+                            >
+                                {review.overallRating.toFixed(1)}
+                            </span>
                         </div>
-                        <p className="text-gray-700">{review.comment}</p>
-                        <p className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString()}</p>
+                        <p className="text-gray-700 mb-2">{review.comment}</p>
+                        <p className="text-xs text-gray-400">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
                     </div>
                 ))}
             </div>

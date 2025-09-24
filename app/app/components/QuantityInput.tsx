@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface QuantityInputProps {
@@ -8,6 +8,7 @@ interface QuantityInputProps {
   min?: number;
   max?: number;
   defaultValue?: number;
+  value?: number;
   onChange?: (value: number) => void;
   tooltip?: string;
   tooltipKey?: string;
@@ -18,12 +19,19 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
   min = 0,
   max = 10,
   defaultValue = 0,
+  value: controlledValue,
   onChange,
   tooltip,
   tooltipKey,
 }) => {
-  const [value, setValue] = useState<number>(defaultValue);
+  const [value, setValue] = useState<number>(controlledValue ?? defaultValue);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (controlledValue !== undefined) {
+      setValue(controlledValue);
+    }
+  }, [controlledValue]);
 
   const handleDecrease = () => {
     if (value > min) {
@@ -45,7 +53,7 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
 
   return (
     <div
-      className="relative flex items-center border border-gray-300 px-4 py-2 rounded-lg bg-white text-black"
+      className="relative flex items-center border border-gray-300 px-4 rounded-lg bg-white text-black h-[42px]"
       title={resolvedTooltip}
     >
       {icon && <div className="mr-2 text-gray-400">{icon}</div>}

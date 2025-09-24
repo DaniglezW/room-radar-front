@@ -64,7 +64,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const formatPrice = (valueInEUR: number) => {
     const converted = valueInEUR * rate;
     const symbol = CURRENCY_SYMBOLS[currency] || '';
-    return `${symbol}${converted.toFixed(2)}`;
+    return `${converted.toFixed(2)} ${symbol}`;
   };
 
   return (

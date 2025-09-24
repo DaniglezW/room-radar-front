@@ -2,17 +2,23 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import StarRating from "./StarRating";
 import { Hotel } from "../types/Hotel";
+import { useCurrency } from "@/context/CurrencyContext";
+import { HotelWithRating } from "../types/hotelSearched";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface SearchResultsListProps {
-    hotels: Hotel[];
+    hotels: HotelWithRating[];
     checkInDate: string | null;
     checkOutDate: string | null;
     maxGuests: number | null;
 }
 
 export default function SearchResultsList({ hotels, checkInDate, checkOutDate, maxGuests }: Readonly<SearchResultsListProps>) {
+
+    const { formatPrice } = useCurrency();
+
     if (hotels.length === 0) {
-        return <p className="text-center text-lg text-gray-500 mt-6">No se encontraron hoteles.</p>;
+        return <LoadingSpinner />
     }
 
     return (
@@ -52,7 +58,7 @@ export default function SearchResultsList({ hotels, checkInDate, checkOutDate, m
                         </div>
 
                         {/* Contenido */}
-                        <div className="p-6 flex-1 flex flex-col justify-between">
+                        <div className="p-6 flex-1 flex flex-col justify-between relative">
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900">{hotel.name}</h3>
                                 <StarRating rating={hotel.stars} />
@@ -65,7 +71,7 @@ export default function SearchResultsList({ hotels, checkInDate, checkOutDate, m
                                     <h4 className="font-semibold text-lg text-gray-800">Habitaciones disponibles:</h4>
                                     {availableRoomsToShow.map(room => (
                                         <div key={room.id} className="text-gray-700 text-sm">
-                                            <span className="font-medium">{room.type}</span> – {room.pricePerNight}€ por noche – hasta <span className="font-medium">{room.maxGuests}</span> personas
+                                            <span className="font-medium">{room.type}</span> – {formatPrice(room.pricePerNight)}€ por noche – hasta <span className="font-medium">{room.maxGuests}</span> personas
                                         </div>
                                     ))}
 
@@ -76,6 +82,16 @@ export default function SearchResultsList({ hotels, checkInDate, checkOutDate, m
                                     )}
                                 </div>
                             </div>
+
+                            {/* Nota global del hotel */}
+                            {hotel.overallRating !== null && hotel.overallRating !== undefined && hotel.overallRating !== 0 && (
+                                <div
+                                    className="absolute bottom-4 right-4 font-bold px-3 py-1 rounded-full text-white"
+                                    style={{ backgroundColor: '#2F6FEB' }}
+                                >
+                                    {hotel.overallRating.toFixed(1)}
+                                </div>
+                            )}
                         </div>
                     </div>
                 );

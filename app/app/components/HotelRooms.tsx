@@ -6,7 +6,7 @@ type RoomType = 'SINGLE' | 'DOUBLE' | 'SUITE' | 'FAMILY';
 
 type RoomImage = {
     id: number;
-    url: string; // suponiendo que tienes una url
+    url: string;
 };
 
 type Room = {

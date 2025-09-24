@@ -7,13 +7,12 @@ import { Hotel } from '@/app/types/Hotel';
 import { Service } from '@/app/types/Service';
 import HotelAmenities from '@/app/components/HotelAmenities';
 import HotelReviews from '@/app/components/HotelReviews';
-import { DateRange } from 'react-date-range';
 import DateRangePicker from '@/app/components/DateRangePicker';
 import QuantityInput from '@/app/components/QuantityInput';
 import { Users } from 'lucide-react';
 import { format, formatISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import { useCurrency } from '@/context/CurrencyContext';
 
@@ -27,7 +26,7 @@ type Room = {
     images: any[];
 };
 
-export default function HotelPage({ params }: { params: Promise<{ id: string }> }) {
+export default function HotelPage({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
     const tableRef = useRef<HTMLDivElement | null>(null);
@@ -49,7 +48,10 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
         },
     ]);
 
+    const router = useRouter();
     const searchParams = useSearchParams();
+    const checkInDate = searchParams.get("checkInDate") || "";
+    const checkOutDate = searchParams.get("checkOutDate") || "";
     const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL;
     const formattedRange = `${format(dateRange[0].startDate, 'd MMM yyyy', { locale: es })} – ${format(dateRange[0].endDate, 'd MMM yyyy', { locale: es })}`;
 
@@ -250,7 +252,14 @@ export default function HotelPage({ params }: { params: Promise<{ id: string }> 
                                             </td>
                                             <td className="text-center px-4 border-b align-middle">
                                                 {isAvailable ? (
-                                                    <button className="bg-green-600 hover:bg-green-700 transition-all duration-300 text-white font-semibold px-4 py-1 rounded">
+                                                    <button
+                                                        onClick={() =>
+                                                            router.push(
+                                                                `/hotel/${hotel.id}/reserve?roomId=${room.id}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&maxGuests=${room.maxGuests}`
+                                                            )
+                                                        }
+                                                        className="bg-green-600 hover:bg-green-700 transition-all duration-300 text-white font-semibold px-4 py-1 rounded"
+                                                    >
                                                         Reservar
                                                     </button>
                                                 ) : (

@@ -6,15 +6,19 @@ import { Hotel } from '../types/Hotel';
 import { Country } from '../types/Country';
 import SearchResultsList from './SearchResultList';
 import { useTranslation } from 'react-i18next';
+import { HotelWithRating } from '../types/hotelSearched';
+import Hotels404 from '../../public/Hotels404.png';
+import Image from 'next/image';
 
 interface HomeBodyProps {
-  searchedHotels: Hotel[] | null;
+  searchedHotels: HotelWithRating[] | null;
   checkInDate: string | null;
   checkOutDate: string | null;
   maxGuests: number | null;
+  serviceIds: number[];
 }
 
-export default function HomeBody({ searchedHotels, checkInDate, checkOutDate, maxGuests }: Readonly<HomeBodyProps>) {
+export default function HomeBody({ searchedHotels, checkInDate, checkOutDate, maxGuests, serviceIds }: Readonly<HomeBodyProps>) {
   const [topHotels, setTopHotels] = useState<Hotel[]>([]);
   const [latestHotels, setLatestHotels] = useState<Hotel[]>([]);
   const [recommendedHotels, setRecommendedHotels] = useState<Hotel[]>([]);
@@ -110,7 +114,12 @@ export default function HomeBody({ searchedHotels, checkInDate, checkOutDate, ma
             />
           </>
         ) : (
-          <p className="text-center text-xl font-semibold text-gray-500">{t("homeBody.noHotels")}</p>
+          <div className="flex flex-col items-center justify-center">
+            <Image src={Hotels404} alt="No hotels found" width={640} height={640} />
+            <p className="text-center text-xl font-semibold text-gray-500">
+              {t("homeBody.noHotels")}
+            </p>
+          </div>
         )}
       </section>
     );
