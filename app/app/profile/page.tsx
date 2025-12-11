@@ -66,7 +66,6 @@ export default function Profile() {
     const buttons = [
         { label: 'Favoritos', icon: <Heart size={28} />, href: '/profile/favorites', color: 'bg-red-500', hover: 'hover:bg-red-600' },
         { label: 'Próximas reservas', icon: <CalendarDays size={28} />, href: '/profile/reservations/active', color: 'bg-green-600', hover: 'hover:bg-green-700' },
-        { label: 'Historial de reservas', icon: <Clock size={28} />, href: '/profile/reservations/history', color: 'bg-gray-600', hover: 'hover:bg-gray-700' },
         { label: 'Detalles del perfil', icon: <User size={28} />, href: '/profile/details', color: 'bg-blue-600', hover: 'hover:bg-blue-700' },
     ];
 
