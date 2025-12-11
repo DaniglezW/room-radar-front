@@ -4,7 +4,7 @@ import 'react-phone-number-input/style.css';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { CalendarDays, Clock, Heart, User } from 'lucide-react';
+import { CalendarDays, Heart, User } from 'lucide-react';
 
 interface UserDTO {
     id: number;
