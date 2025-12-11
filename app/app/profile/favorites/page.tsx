@@ -16,7 +16,6 @@ export default function Favorites() {
     useEffect(() => {
         const loadFavorites = async () => {
             const data = await fetchUserFavoritesList();
-            console.log(data);
             setFavorites(data);
             setLoading(false);
         };

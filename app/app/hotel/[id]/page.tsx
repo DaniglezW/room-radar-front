@@ -79,10 +79,19 @@ export default function HotelPage({ params }: Readonly<{ params: Promise<{ id: s
                 setServices(dataServices);
 
                 // Fetch hotel rooms
-                const resRooms = await fetch(`${baseUrl}/room/v1/hotel/${id}`);
-                if (!resRooms.ok) throw new Error(`Error ${resRooms.status}: ${resRooms.statusText}`);
-                const dataRooms = await resRooms.json();
-                setRooms(dataRooms.room ?? []);
+                const checkIn = searchParams.get('checkInDate');
+                const checkOut = searchParams.get('checkOutDate');
+
+                if (checkIn && checkOut) {
+                    setDateRange([
+                        { startDate: new Date(checkIn), endDate: new Date(checkOut), key: 'selection' }
+                    ]);
+                    await fetchRoomsByAvailability();
+                } else {
+                    const resRooms = await fetch(`${baseUrl}/room/v1/hotel/${id}`);
+                    const dataRooms = await resRooms.json();
+                    setRooms(dataRooms.room ?? []);
+                }
             } catch (err: any) {
                 setError(err.message ?? 'Error desconocido');
             } finally {
@@ -144,6 +153,22 @@ export default function HotelPage({ params }: Readonly<{ params: Promise<{ id: s
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleReserve = (roomId: number, maxGuests: number) => {
+        const effectiveCheckIn =
+            checkInDate && checkInDate.trim() !== ""
+                ? checkInDate
+                : formatISO(dateRange[0].startDate, { representation: "date" });
+
+        const effectiveCheckOut =
+            checkOutDate && checkOutDate.trim() !== ""
+                ? checkOutDate
+                : formatISO(dateRange[0].endDate, { representation: "date" });
+
+        router.push(
+            `/hotel/${hotel!.id}/reserve?roomId=${roomId}&checkInDate=${effectiveCheckIn}&checkOutDate=${effectiveCheckOut}&maxGuests=${maxGuests}`
+        );
     };
 
     if (loading) return <LoadingSpinner />;
@@ -253,11 +278,7 @@ export default function HotelPage({ params }: Readonly<{ params: Promise<{ id: s
                                             <td className="text-center px-4 border-b align-middle">
                                                 {isAvailable ? (
                                                     <button
-                                                        onClick={() =>
-                                                            router.push(
-                                                                `/hotel/${hotel.id}/reserve?roomId=${room.id}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&maxGuests=${room.maxGuests}`
-                                                            )
-                                                        }
+                                                        onClick={() => handleReserve(room.id, room.maxGuests)}
                                                         className="bg-green-600 hover:bg-green-700 transition-all duration-300 text-white font-semibold px-4 py-1 rounded"
                                                     >
                                                         Reservar

@@ -9,7 +9,6 @@ import { es } from 'date-fns/locale';
 interface ReservationDTO {
     id: number;
     hotelName?: string;
-    hotelImage?: string | null;
     checkInDate?: string;
     checkOutDate?: string;
     guests?: number;
@@ -18,6 +17,7 @@ interface ReservationDTO {
     paymentMethod?: string;
     status?: string;
     confirmationCode?: string;
+    mainImage?: string | null;
 }
 
 export default function ActiveReservations() {
@@ -44,6 +44,7 @@ export default function ActiveReservations() {
             .then(async (res) => {
                 if (!res.ok) throw new Error('Error fetching reservations');
                 const data = await res.json();
+                console.log(data);
                 setReservations(data.reservation || []);
             })
             .catch(() => router.push('/profile'));

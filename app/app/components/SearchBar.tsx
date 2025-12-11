@@ -74,7 +74,6 @@ export default function SearchBar({ onSearchResults }: Readonly<SearchBarProps>)
 
     try {
       const results = await searchHotels(request);
-      console.log("Hoteles encontrados:", results);
       onSearchResults(results, {
         checkInDate: request.checkIn,
         checkOutDate: request.checkOut,

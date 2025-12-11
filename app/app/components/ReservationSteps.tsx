@@ -22,14 +22,23 @@ interface Props {
 }
 
 export default function ReservationSteps({ hotelId, room, checkInDate, checkOutDate, guests }: Readonly<Props>) {
+    const today = new Date();
     const [step, setStep] = useState(1);
+    const [reserving, setReserving] = useState(false);
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const checkIn = checkInDate ? new Date(checkInDate) : today;
+    const checkOut = checkOutDate ? new Date(checkOutDate) : today;
+    const [reservationMessage, setReservationMessage] = useState<string | null>(null);
     const [formData, setFormData] = useState({
+        checkOutDate: checkOutDate ?? checkOut,
+        checkInDate: checkInDate ?? checkIn,
         name: "",
         email: "",
         phone: "",
         cardNumber: "",
         expiry: "",
         cvv: "",
+        guestNames: "",
     });
 
     const router = useRouter();
@@ -37,9 +46,8 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
 
     // Hooks de react-payment-inputs
     const { getCardNumberProps, getExpiryDateProps, getCVCProps, meta } = usePaymentInputs();
-
     const nights = Math.max(
-        (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24),
+        (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24),
         1
     );
 
@@ -69,7 +77,6 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    // Funciones para usuario logueado
     const getTokenFromCookie = () => {
         const match = /(^| )token=([^;]+)/.exec(document.cookie);
         return match ? match[2] : null;
@@ -105,13 +112,34 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
         }
     };
 
+    const formatDate = (date: Date | string | null | undefined) => {
+        if (!date) return "";
+        const d = typeof date === "string" ? new Date(date) : date;
+        if (isNaN(d.getTime())) return "";
+        return d.toISOString().split("T")[0];
+    };
+
     const handleConfirm = async () => {
+        if (reserving) return;
+        setReserving(true);
+        setReservationMessage(null);
+
+        const guestNamesArray = [formData.name];
+
+        if (formData.guestNames.trim() !== "") {
+            const extras = formData.guestNames
+                .split(',')
+                .map(n => n.trim())
+                .filter(n => n.length > 0 && n !== formData.name);
+
+            guestNamesArray.push(...extras);
+        }
         const payload = {
             roomId: room.id,
-            checkInDate,
-            checkOutDate,
+            checkInDate: formatDate(checkInDate ?? checkIn),
+            checkOutDate: formatDate(checkOutDate ?? checkOut),
             guests,
-            guestNames: [formData.name],
+            guestNames: guestNamesArray,
             guestEmail: formData.email,
             guestPhone: formData.phone,
             cardNumber: formData.cardNumber,
@@ -133,14 +161,22 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
                 },
                 body: JSON.stringify(payload),
             });
-            if (res.ok) {
+            const data = await res.json();
+            if (data.code === 0) {
+                setReserving(false);
+                setIsConfirmed(true);
                 toast.success('Reserva confirmada');
+                setReservationMessage(`Reserva confirmada ✅. Resumen enviado al email: ${formData.email}`);
             } else {
-                toast.error('Error al reservar');
+                setReserving(false);
+                toast.error('Error al reservar: ' + data.message);
+                setReservationMessage(`❌ Error al reservar: ${data.message}`);
             }
         } catch (err) {
             console.error(err);
+            setReserving(false);
             toast.error('Error al reservar');
+            setReservationMessage('❌ Error al reservar, intenta de nuevo');
         }
     };
 
@@ -159,12 +195,38 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
                     {Array.from({ length: guests }, (_, i) => (
                         <div key={i} className="space-y-2 border-b pb-4 mb-4">
                             <input
-                                name={`guest_${i}_name`}
                                 placeholder={`Nombre del huésped ${i + 1}`}
                                 className="w-full p-3 border rounded"
-                                value={i === 0 ? formData.name : ""}
-                                onChange={handleChange}
+                                value={
+                                    i === 0
+                                        ? formData.name
+                                        : formData.guestNames.split(",")[i] || ""
+                                }
+                                onChange={(e) => {
+                                    if (i === 0) {
+                                        // 👤 Primer huésped → también va en formData.name
+                                        const updatedNames = formData.guestNames
+                                            ? [e.target.value, ...formData.guestNames.split(",").slice(1)]
+                                            : [e.target.value];
+                                        setFormData({
+                                            ...formData,
+                                            name: e.target.value,
+                                            guestNames: updatedNames.join(","),
+                                        });
+                                    } else {
+                                        // 👥 Otros huéspedes
+                                        const currentNames = formData.guestNames
+                                            ? formData.guestNames.split(",")
+                                            : [];
+                                        currentNames[i] = e.target.value;
+                                        setFormData({
+                                            ...formData,
+                                            guestNames: currentNames.join(","),
+                                        });
+                                    }
+                                }}
                             />
+
                             {i === 0 && (
                                 <>
                                     <input
@@ -183,8 +245,10 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
                                             id="phone"
                                             international
                                             defaultCountry="ES"
-                                            value={formData.phone || ''}
-                                            onChange={(value: any) => setFormData({ ...formData, phone: value || '' })}
+                                            value={formData.phone || ""}
+                                            onChange={(value: any) =>
+                                                setFormData({ ...formData, phone: value || "" })
+                                            }
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                         />
                                     </div>
@@ -247,8 +311,8 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
                         <DateRangePicker
                             dateRange={[
                                 {
-                                    startDate: new Date(checkInDate),
-                                    endDate: new Date(checkOutDate),
+                                    startDate: checkIn,
+                                    endDate: checkOut,
                                     key: 'selection',
                                 },
                             ]}
@@ -264,12 +328,20 @@ export default function ReservationSteps({ hotelId, room, checkInDate, checkOutD
                         <p className="text-xl font-semibold text-green-700">Total: {formatPrice(totalPrice)}</p>
                     </div>
 
-                    <button
-                        onClick={handleConfirm}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg"
-                    >
-                        Confirmar Reserva
-                    </button>
+                    {!isConfirmed && (
+                        <button
+                            onClick={handleConfirm}
+                            disabled={reserving}
+                            className={`w-full bg-green-600 text-white font-bold px-6 py-3 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg ${reserving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+                                }`}
+                        >
+                            {reserving ? "Procesando..." : "Confirmar Reserva"}
+                        </button>
+                    )}
+
+                    {reservationMessage && (
+                        <p className="mt-4 text-center text-lg font-medium text-gray-800">{reservationMessage}</p>
+                    )}
                 </div>
             )}
 

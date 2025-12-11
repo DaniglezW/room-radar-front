@@ -23,8 +23,6 @@ export default function ReservePage() {
     const baseUrl = process.env.NEXT_PUBLIC_AUTH_URL;
 
     useEffect(() => {
-        console.log(id, roomId);
-        
         if (!id || !roomId) return;
 
         const fetchData = async () => {
