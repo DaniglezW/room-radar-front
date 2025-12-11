@@ -18,6 +18,7 @@ interface ReservationDTO {
     status?: string;
     confirmationCode?: string;
     mainImage?: string | null;
+    hotelImage?: string | null;
 }
 
 export default function ActiveReservations() {
